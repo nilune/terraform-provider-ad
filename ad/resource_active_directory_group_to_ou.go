@@ -214,8 +214,8 @@ func resourceADGroupToOURead(d *schema.ResourceData, meta interface{}) error {
 	searchRequest := ldap.NewSearchRequest(
 		dnOfGroup, // The base dn to search
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
-		"(&(objectClass=Group)(cn="+groupName+"))", // The filter to apply
-		[]string{"dn", "cn"},                       // A list attributes to retrieve
+		"(&(objectClass=Group)(cn="+groupName+"))", 		// The filter to apply
+		[]string{"dn", "cn", "description", "groupType"}, 	// A list attributes to retrieve
 		nil,
 	)
 

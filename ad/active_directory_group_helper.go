@@ -16,6 +16,9 @@ func addGroupToAD(groupName string, dnName string, adConn *ldap.Conn, desc strin
 	addRequest.Attribute("sAMAccountName", []string{groupName})
 	addRequest.Attribute("groupType", []string{strconv.Itoa(int(groupType))})
 
+	if desc != "" {
+		addRequest.Attribute("description", []string{desc})
+	}
 	if gidNumber != "" {
 		addRequest.Attribute("gidNumber", []string{gidNumber})
 	}
