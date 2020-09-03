@@ -12,6 +12,18 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
+const (
+	_                       = iota
+	groupScopeGlobal uint32 = 1 << iota
+	groupScopeLocal
+	groupScopeUniversal
+)
+
+const (
+	groupCategorySystem   uint32 = 0x0
+	groupCategorySecurity uint32 = 0x80000000
+)
+
 func resourceGroupToOU() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceADGroupToOUCreate,
@@ -33,6 +45,20 @@ func resourceGroupToOU() *schema.Resource {
 				Optional: true,
 				Default:  nil,
 				ForceNew: true,
+			},
+			"scope": {
+				Type:        schema.TypeString,
+				Description: "The group's scope. Can be one of `global`, `local`, or `universal` (case sensitive).",
+				Optional:    true,
+				Default:     "global",
+				ForceNew:    true,
+			},
+			"category": {
+				Type:        schema.TypeString,
+				Description: "The group's category. Can be one of `system` or `security` (case sensitive).",
+				Optional:    true,
+				Default:     "security",
+				ForceNew:    true,
 			},
 			"gid_number": {
 				Type:        schema.TypeString,
@@ -77,6 +103,8 @@ func resourceADGroupToOUCreate(d *schema.ResourceData, meta interface{}) error {
 	groupName := d.Get("group_name").(string)
 	OUDistinguishedName := d.Get("ou_distinguished_name").(string)
 	description := d.Get("description").(string)
+	scope := d.Get("scope").(string)
+	category := d.Get("category").(string)
 	gidNumber := d.Get("gid_number").(string)
 	auto_gid := d.Get("auto_gid").(bool)
 	auto_gid_min := d.Get("auto_gid_min").(int)
@@ -88,7 +116,23 @@ func resourceADGroupToOUCreate(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("[DEBUG] Name of the DN is : %s ", dnOfGroup)
 	log.Printf("[DEBUG] Adding the Group to the AD : %s ", groupName)
 
-	err := addGroupToAD(groupName, dnOfGroup, client, description, gidNumber)
+	var groupType uint32
+	switch category {
+	case "system":
+		groupType += groupCategorySystem
+	case "security":
+		groupType += groupCategorySecurity
+	}
+	switch scope {
+	case "global":
+		groupType += groupScopeGlobal
+	case "local":
+		groupType += groupScopeLocal
+	case "universal":
+		groupType += groupScopeUniversal
+	}
+
+	err := addGroupToAD(groupName, dnOfGroup, client, description, groupType, gidNumber)
 	if err != nil {
 		log.Printf("[ERROR] Error while adding a Group to the AD : %s ", err)
 		return fmt.Errorf("Error while adding a Group to the AD %s", err)
