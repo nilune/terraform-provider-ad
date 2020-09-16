@@ -28,7 +28,11 @@ func resourceGroupToOU() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceADGroupToOUCreate,
 		Read:   resourceADGroupToOURead,
+		// Update: resourceADGroupToOUUpdate,
 		Delete: resourceADGroupToOUDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"group_name": {
 				Type:     schema.TypeString,
@@ -58,6 +62,34 @@ func resourceGroupToOU() *schema.Resource {
 				Description: "The group's category. Can be one of `system` or `security` (case sensitive).",
 				Optional:    true,
 				Default:     "security",
+				ForceNew:    true,
+			},
+			"managed_by": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Sets managed by attribute to specified DN",
+				Default:     "",
+				ForceNew:    true,
+			},
+			"mail_address": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Sets email address attribute for group",
+				Default:     "",
+				ForceNew:    true,
+			},
+			"member": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Sets group membership to specified DN(s)",
+				Default:     "",
+				ForceNew:    true,
+			},
+			"mail_nickname": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Sets mail nickname attribute",
+				Default:     "",
 				ForceNew:    true,
 			},
 			"gid_number": {
@@ -106,6 +138,11 @@ func resourceADGroupToOUCreate(d *schema.ResourceData, meta interface{}) error {
 	scope := d.Get("scope").(string)
 	category := d.Get("category").(string)
 	gidNumber := d.Get("gid_number").(string)
+	mailAddress := d.Get("mail_address").(string)
+	mailNickname := d.Get("mail_nickname").(string)
+	managedBy := d.Get("managed_by").(string)
+	member := d.Get("member").(string)
+
 	auto_gid := d.Get("auto_gid").(bool)
 	auto_gid_min := d.Get("auto_gid_min").(int)
 	auto_gid_max := d.Get("auto_gid_max").(int)
@@ -132,7 +169,7 @@ func resourceADGroupToOUCreate(d *schema.ResourceData, meta interface{}) error {
 		groupType += groupScopeUniversal
 	}
 
-	err := addGroupToAD(groupName, dnOfGroup, client, description, groupType, gidNumber)
+	err := addGroupToAD(groupName, dnOfGroup, client, description, groupType, gidNumber, mailAddress, mailNickname, member, managedBy)
 	if err != nil {
 		log.Printf("[ERROR] Error while adding a Group to the AD : %s ", err)
 		return fmt.Errorf("Error while adding a Group to the AD %s", err)
@@ -214,8 +251,8 @@ func resourceADGroupToOURead(d *schema.ResourceData, meta interface{}) error {
 	searchRequest := ldap.NewSearchRequest(
 		dnOfGroup, // The base dn to search
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
-		"(&(objectClass=Group)(cn="+groupName+"))", 		// The filter to apply
-		[]string{"dn", "cn", "description", "groupType"}, 	// A list attributes to retrieve
+		"(&(objectClass=Group)(cn="+groupName+"))",       // The filter to apply
+		[]string{"dn", "cn", "description", "groupType"}, // A list attributes to retrieve
 		nil,
 	)
 

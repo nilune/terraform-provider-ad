@@ -10,12 +10,24 @@ import (
 	ldap "gopkg.in/ldap.v3"
 )
 
-func addGroupToAD(groupName string, dnName string, adConn *ldap.Conn, desc string, groupType uint32, gidNumber string) error {
+func addGroupToAD(groupName string, dnName string, adConn *ldap.Conn, desc string, groupType uint32, gidNumber string, mailAddress string, mailNickname string, member string, managedBy string) error {
 	addRequest := ldap.NewAddRequest(dnName, nil)
 	addRequest.Attribute("objectClass", []string{"group"})
 	addRequest.Attribute("sAMAccountName", []string{groupName})
 	addRequest.Attribute("groupType", []string{strconv.Itoa(int(groupType))})
 
+	if mailAddress != "" {
+		addRequest.Attribute("mail", []string{mailAddress})
+	}
+	if mailNickname != "" {
+		addRequest.Attribute("mailNickname", []string{mailNickname})
+	}
+	if member != "" {
+		addRequest.Attribute("member", []string{member})
+	}
+	if managedBy != "" {
+		addRequest.Attribute("managedBy", []string{managedBy})
+	}
 	if desc != "" {
 		addRequest.Attribute("description", []string{desc})
 	}
