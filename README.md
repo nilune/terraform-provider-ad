@@ -1,5 +1,7 @@
 # Terraform Active Directory Provider
 
+## This repository is fork of [3d party AD provider](https://github.com/GSLabDev/terraform-provider-ad).
+
 This is the repository for the Terraform Active Directory Provider, which one can use
 with Terraform to work with Active Directory.
 
