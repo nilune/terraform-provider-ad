@@ -2,6 +2,20 @@
 
 ## **NOTE:** This repository is fork of [3d party AD provider](https://github.com/GSLabDev/terraform-provider-ad)
 
+This repository contains some changes in management AD groups. Also it gives binary provider:
+
+```bash
+make fmt
+make build
+
+# Create tag
+curl --request POST --header "Private-Token: SECRET TOKEN" --form "file=@/path/to/binary/file" "https://sog-git.avp.ru/api/v4/projects/194/uploads"
+
+# Create release in GUI
+```
+
+## Repository info
+
 This is the repository for the Terraform Active Directory Provider, which one can use
 with Terraform to work with Active Directory.
 
