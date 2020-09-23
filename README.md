@@ -9,7 +9,7 @@ make fmt
 make build
 
 # Create tag
-curl --request POST --header "Private-Token: SECRET TOKEN" --form "file=@/path/to/binary/file" "https://sog-git.avp.ru/api/v4/projects/194/uploads"
+curl --request POST --header "Private-Token: SECRET TOKEN" --form "file=@/path/to/binary/file" "https://gitlab.ru/api/v4/projects/194/uploads"
 
 # Create release in GUI
 ```
